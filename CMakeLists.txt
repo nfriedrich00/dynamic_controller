@@ -75,4 +75,3 @@ ament_export_dependencies(${dependencies})
 pluginlib_export_plugin_description_file(nav2_core dynamic_controller.xml)
 
 ament_package()
-
