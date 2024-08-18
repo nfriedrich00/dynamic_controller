@@ -1,0 +1,8 @@
+<class_libraries>
+  <library path="dynamic_controller">
+    <class type="dynamic_controller::DynamicController" base_class_type="nav2_core::Controller">
+      <description>dynamic_controller</description>
+    </class>
+  </library>
+</class_libraries>
+
