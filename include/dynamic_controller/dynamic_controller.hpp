@@ -44,6 +44,8 @@ private:
   // chatgpt:
   //std::shared_ptr<nav2_core::Controller> active_controller_;
   nav2_core::Controller::Ptr active_controller_;
+  nav2_core::Controller::Ptr primary_controller_;
+  nav2_core::Controller::Ptr secondary_controller_;
   pluginlib::ClassLoader<nav2_core::Controller> controller_loader_;
   rclcpp::Logger logger_{rclcpp::get_logger("DynamicController")};
 

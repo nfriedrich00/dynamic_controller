@@ -54,9 +54,15 @@ void DynamicController::configure(
     throw std::runtime_error("Failed to lock parent node in DynamicController::configure");
   }
   try {
+    primary_controller_ = controller_loader_.createUniqueInstance("nav2_regulated_pure_pursuit_controller::RegulatedPurePursuitController");
+    secondary_controller_ = controller_loader_.createUniqueInstance("nav2_mppi_controller::MPPIController");
+
+    primary_controller_->configure(parent, "RegulatedPurePursuitController", tf, costmap_ros);
+    secondary_controller_->configure(parent, "MPPIController", tf, costmap_ros);
+
     // Load the regulated pure pursuit controller
-    active_controller_ = controller_loader_.createUniqueInstance("nav2_regulated_pure_pursuit_controller::RegulatedPurePursuitController");
-    active_controller_->configure(parent, name, tf, costmap_ros);
+//    active_controller_ = controller_loader_.createUniqueInstance("nav2_regulated_pure_pursuit_controller::RegulatedPurePursuitController");
+//    active_controller_->configure(parent, name, tf, costmap_ros);
   } catch (const pluginlib::PluginlibException &ex) {
     RCLCPP_FATAL(logger_, "Failed to load the controller plugin. Error: %s", ex.what());
     throw std::runtime_error("Failed to load controller plugin.");
@@ -70,32 +76,52 @@ void DynamicController::configure(
 
 void DynamicController::timerCallback()
 {
+  /*
   if (use_rpp_) {
     changeControllerToMPPI();
   } else {
     changeControllerToRPP();
   }
+  */
   use_rpp_ = !use_rpp_;
 }
 
 void DynamicController::cleanup()
 {
-  if (active_controller_) {
-    active_controller_->cleanup();
+//  if (active_controller_) {
+//    active_controller_->cleanup();
+//  }
+  if (primary_controller_) {
+    primary_controller_->cleanup();
+  }
+  if (secondary_controller_) {
+    secondary_controller_->cleanup();
   }
 }
 
 void DynamicController::activate()
 {
-  if (active_controller_) {
-    active_controller_->activate();
+//  if (active_controller_) {
+//    active_controller_->activate();
+//  }
+  if (primary_controller_) {
+    primary_controller_->activate();
+  }
+  if (secondary_controller_) {
+    secondary_controller_->activate();
   }
 }
 
 void DynamicController::deactivate()
 {
-  if (active_controller_) {
-    active_controller_->deactivate();
+//  if (active_controller_) {
+//    active_controller_->deactivate();
+//  }
+  if (primary_controller_) {
+    primary_controller_->deactivate();
+  }
+  if (secondary_controller_) {
+    secondary_controller_->deactivate();
   }
 }
 
@@ -104,24 +130,48 @@ geometry_msgs::msg::TwistStamped DynamicController::computeVelocityCommands(
   const geometry_msgs::msg::Twist &velocity,
   nav2_core::GoalChecker *goal_checker)
 {
+
+  if (use_rpp_) {
+    if (primary_controller_) {
+      return primary_controller_->computeVelocityCommands(pose, velocity, goal_checker);
+    }
+  }
+  else {
+    if (secondary_controller_) {
+      return secondary_controller_->computeVelocityCommands(pose, velocity, goal_checker);
+    }
+  }
+  /*
   if (active_controller_) {
     return active_controller_->computeVelocityCommands(pose, velocity, goal_checker);
   }
-
+*/
   throw std::runtime_error("No active controller is loaded");
 }
 
 void DynamicController::setPlan(const nav_msgs::msg::Path &path)
 {
-  if (active_controller_) {
-    active_controller_->setPlan(path);
+//  if (active_controller_) {
+//    active_controller_->setPlan(path);
+//  }
+  if (primary_controller_) {
+    primary_controller_->setPlan(path);
+  }
+  if (secondary_controller_) {
+    secondary_controller_->setPlan(path);
   }
 }
 
 void DynamicController::setSpeedLimit(const double &speed_limit, const bool &percentage)
 {
-  if (active_controller_) {
-    active_controller_->setSpeedLimit(speed_limit, percentage);
+//  if (active_controller_) {
+//    active_controller_->setSpeedLimit(speed_limit, percentage);
+//  }
+  if (primary_controller_) {
+    primary_controller_->setSpeedLimit(speed_limit, percentage);
+  }
+  if (secondary_controller_) {
+    secondary_controller_->setSpeedLimit(speed_limit, percentage);
   }
 }
 
